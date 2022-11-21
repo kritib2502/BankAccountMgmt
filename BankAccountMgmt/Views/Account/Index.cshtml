@@ -1,0 +1,58 @@
+﻿@model IEnumerable<ClientAccountVM>
+@using BankAccountMgmt.ViewModels
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Account Summary</h1>
+
+@ViewBag.Message
+<p>
+    <a asp-action="Create">Add New Bank Account</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.AccountNum)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FirstName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AccountType)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(model => item.AccountNum)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => item.FirstName)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => item.LastName)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => item.AccountType)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.AccountNum">Edit</a> |
+                    <a asp-action="Details" asp-route-num="@item.AccountNum">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.AccountNum">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
