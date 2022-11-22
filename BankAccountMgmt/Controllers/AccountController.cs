@@ -79,15 +79,14 @@ namespace BankAccountMgmt.Controllers
 
   /*------------------------------------------------ DETAILS-----------------------------------------------*/
             public IActionResult Details(int num, string message)
-        {
-            ClientAccountRepo clientAccountRepo = new ClientAccountRepo(_db);
+            {
+               ClientAccountRepo clientAccountRepo = new ClientAccountRepo(_db);
 
-            ClientAccountVM detail = clientAccountRepo.GetAccountDetail(num, User.Identity.Name);
+               ClientAccountVM detail = clientAccountRepo.GetAccountDetail(num, User.Identity.Name);
 
-             detail.Message = message;
-
-            return View(detail);
-        }
+                detail.Message = message;
+               return View(detail);
+             }
 
 
 /*------------------------------------------------ CREATE -----------------------------------------------*/
@@ -103,12 +102,11 @@ namespace BankAccountMgmt.Controllers
 
         public IActionResult Create([Bind("AccountNum,AccountType,Balance")] BankAccountVM bankAccount)
         {
-            bankAccount.Message = "Invalid entry please try again";
+            bankAccount.Message = "Invalid form data, please try again";
             if (ModelState.IsValid)
             {
                 BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);
                 Tuple<int,string> response = bankAccountRepo.CreateAccount(bankAccount, User.Identity.Name);
-
 
                 if (response.Item1 < 0)
                 {
@@ -120,12 +118,9 @@ namespace BankAccountMgmt.Controllers
                 }
               
             }
-
             ViewData["AccountType"] = new SelectList(_db.AccountTypes, "AccountType", "AccountType", bankAccount.AccountType);
-
             return View(bankAccount);
         }
-
 
 /*------------------------------------------------ EDIT -----------------------------------------------*/
         public IActionResult Edit(int id)
@@ -172,8 +167,6 @@ namespace BankAccountMgmt.Controllers
             string deleteMsg = " ";
             if (ModelState.IsValid)
             {
-                //ModelState.Remove("ClientAccount");
-                // ModelState.ClearValidationState("ClientAccount");
                 BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);
                 deleteMsg = bankAccountRepo.DeleteAccount(deleteAccount.AccountNum);
 
@@ -181,11 +174,8 @@ namespace BankAccountMgmt.Controllers
                 return RedirectToAction("Index", "Account", new { message = deleteMsg });
             }
 
-
             return View(deleteAccount);
         }
-
-
 
     }
 }

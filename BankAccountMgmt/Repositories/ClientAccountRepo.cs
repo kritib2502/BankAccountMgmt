@@ -13,6 +13,12 @@ namespace BankAccountMgmt.Repositories
         {
             _db = context;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>List<ClientAccountVM></returns>
         public List<ClientAccountVM> GetClientAccountsByEmail(string email)
         {
             ClientRepo clientRepo = new ClientRepo(_db);
@@ -37,6 +43,12 @@ namespace BankAccountMgmt.Repositories
             return clientAccountVMs;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountNum"></param>
+        /// <param name="email"></param>
+        /// <returns>ClientAccountVM</returns>
         public ClientAccountVM GetAccountDetail(int accountNum, string email)
         {
             BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);

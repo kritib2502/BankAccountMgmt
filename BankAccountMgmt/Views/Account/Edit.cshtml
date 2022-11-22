@@ -4,12 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     string message = Model != null ? Model.Message : string.Empty;
 }
-<h1>Edit</h1>
-<h4>Bank account @Model.AccountNum </h4>
-@if(message != ""){
-    <div class="alert alert-success">@message</div>
-}
-
+<h1>Modify Account Details</h1>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -56,6 +51,9 @@
         </form>
     </div>
 </div>
+
+<div style="color:red;">@message</div>
+
 <div>
     <a asp-action="Index">Back to List</a>
 </div>

@@ -2,11 +2,11 @@
 
 @{
     ViewData["Title"] = "Details";
-    string message = Model != null ? Model.Message : string.Empty;
+    string message = Model != null ? Model.Message : String.Empty;
 }
 
 <h1>Details</h1>
-@if (message != " ")
+@if(message != null)
 {
     <div class="alert alert-success">@message</div>
 }
