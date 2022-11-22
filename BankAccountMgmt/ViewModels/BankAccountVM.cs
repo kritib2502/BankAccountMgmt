@@ -16,5 +16,6 @@ namespace BankAccountMgmt.ViewModels
         [RegularExpression("^[0-9]+$|^[0-9]+.[0-9]{1}$|^[0-9]+.[0-9]{2}$", ErrorMessage = "Positive numbers only")]
         public decimal Balance { get; set; }
 
+        public string? Message { get; set; }
     }
 }

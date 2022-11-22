@@ -1,13 +1,17 @@
-﻿@model BankAccountMgmt.Models.BankAccount
+﻿@model BankAccountMgmt.ViewModels.BankAccountVM
 
 
 @{
     ViewData["Title"] = "Create";
+    string message = Model != null ? Model.Message : string.Empty;
 }
 
 <h1>Add New Account</h1>
+@if (message != " ")
+{
+    <div class="alert alert-success">@message</div>
+}
 
-@ViewBag.message
 <hr />
 <div class="row">
     <div class="col-md-4">

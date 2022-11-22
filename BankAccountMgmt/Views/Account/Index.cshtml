@@ -1,32 +1,64 @@
-﻿@model IEnumerable<ClientAccountVM>
+﻿@*@model IEnumerable<ClientAccountVM>*@
 @using BankAccountMgmt.ViewModels
+@using BankAccountMgmt.Controllers
+@model PaginatedList<ClientAccountVM>
+
 
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
 }
 
 <h1>Account Summary</h1>
-
 @ViewBag.Message
 <p>
     <a asp-action="Create">Add New Bank Account</a>
 </p>
+
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>
+            <div class="form-group" style="display: inline-block">
+                <span>Search on AccountType:</span>
+                <input type="text" name="SearchString"
+                       value="@ViewData["currentFilter"]" required />
+            </div>
+            <div class="form-group" style="display: inline-block">
+                <input type="submit" value="Search" class="btn btn-primary" />
+            </div>
+            <a asp-action="Index">Back to Full List</a>
+        </p>
+    </div>
+</form>
+
 <table class="table">
     <thead>
         <tr>
             <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["accountNumSortParm"]">
+                    AccountNum
+                </a>
+            </th>
+
+        @*    <th>
                 @Html.DisplayNameFor(model => model.AccountNum)
+            </th>*@
+            <th>
+               FirstName
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FirstName)
+              LastName
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LastName)
-            </th>
-            <th>
+        @*    <th>
                 @Html.DisplayNameFor(model => model.AccountType)
+            </th>*@
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["accountTypeSortParm"]">
+                    AccountType
+                </a>
             </th>
+
         </tr>
     </thead>
     <tbody>
@@ -54,5 +86,25 @@
         }
     </tbody>
 </table>
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+}
+
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-page="@(Model.PageIndex - 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @prevDisabled">
+    Previous
+</a>
+<a asp-action="Index"
+   asp-route-sortOrder="@ViewData["CurrentSort"]"
+   asp-route-page="@(Model.PageIndex + 1)"
+   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+   class="btn btn-default @nextDisabled">
+    Next
+</a>
+
 
 

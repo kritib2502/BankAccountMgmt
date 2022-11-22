@@ -2,8 +2,11 @@
 using BankAccountMgmt.Models;
 using BankAccountMgmt.Repositories;
 using BankAccountMgmt.ViewModels;
+using BankAccountMVC.Repositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Data.Entity;
 
 namespace BankAccountMgmt.Controllers
 {
@@ -16,22 +19,73 @@ namespace BankAccountMgmt.Controllers
             _db = context;
         }
 
- /*------------------------------------------------ INDEX -----------------------------------------------*/
-        public IActionResult Index()
+        /*------------------------------------------------ INDEX -----------------------------------------------*/
+
+
+        public IActionResult Index(string sortOrder, string searchString, string currentFilter, int? page)
         {
+            ClientRepo clientRepo = new ClientRepo(_db);
+            HttpContext.Session.SetString("FirstName", clientRepo.GetClient(User.Identity.Name).FirstName);
+
+
+            //HttpContext.Session.SetString("Client", clientRepo.GetClient(User.Identity.Name).ClientId);
+
+            if (string.IsNullOrEmpty(sortOrder))
+            {
+                ViewData["accountNumSortParm"] = "accountNum_desc";
+            }
+            else
+            {
+                ViewData["accountNumSortParm"] = sortOrder == "AccountNum" ? "accountNum_desc" : "AccountNum";
+            }
+
+            ViewData["accountTypeSortParm"] = sortOrder == "AccountType" ? "accountType_desc" : "accountType";
+
+            if (searchString != null)
+            {
+                page = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
             ClientAccountRepo clientAccountRepo = new ClientAccountRepo(_db);
             IEnumerable<ClientAccountVM> accounts = clientAccountRepo.GetClientAccountsByEmail(User.Identity.Name);
-            return View(accounts);
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                accounts = accounts.Where(a => a.AccountType.Contains(searchString));
+            }
+            switch (sortOrder)
+            {
+                case "accountNum_desc":
+                    accounts = accounts.OrderByDescending(a => a.AccountType);
+                    break;
+                case "AccountNum":
+                    accounts = accounts.OrderBy(a => a.AccountType);
+                    break;
+                case "accountType_desc":
+                    accounts = accounts.OrderByDescending(a => a.AccountType);
+                    break;
+                default:
+                    accounts = accounts.OrderByDescending(a => a.AccountNum);
+                    break;
+            }
+
+            int pageSize = 2;
+            return View(PaginatedList<ClientAccountVM>.Create(accounts.AsQueryable().AsNoTracking(), page ?? 1, pageSize));
         }
 
-/*------------------------------------------------ DETAILS-----------------------------------------------*/
-        public IActionResult Details(int num, string message)
+  /*------------------------------------------------ DETAILS-----------------------------------------------*/
+            public IActionResult Details(int num, string message)
         {
             ClientAccountRepo clientAccountRepo = new ClientAccountRepo(_db);
 
             ClientAccountVM detail = clientAccountRepo.GetAccountDetail(num, User.Identity.Name);
 
-            ViewData["message"] = message;
+             detail.Message = message;
+
             return View(detail);
         }
 
@@ -47,25 +101,25 @@ namespace BankAccountMgmt.Controllers
 
         [HttpPost] // POST: Account/Create
 
-        public IActionResult Create([Bind("AccountNum,AccountType,Balance")] BankAccount bankAccount)
+        public IActionResult Create([Bind("AccountNum,AccountType,Balance")] BankAccountVM bankAccount)
         {
-            ViewData["message"] = "";
-            string createMsg = " ";
-            int accountNum = 0;
-
+            bankAccount.Message = "Invalid entry please try again";
             if (ModelState.IsValid)
             {
                 BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);
-                accountNum = bankAccountRepo.CreateAccount(bankAccount, User.Identity.Name);
-                createMsg = $"Success creating your {bankAccount.AccountType} account, your new account number is {bankAccount.AccountNum}";
+                Tuple<int,string> response = bankAccountRepo.CreateAccount(bankAccount, User.Identity.Name);
 
 
-                return RedirectToAction("Details", "Account", new { num = bankAccount.AccountNum, message = createMsg });
-
-                //ViewData["message"] = createMsg;
+                if (response.Item1 < 0)
+                {
+                    bankAccount.Message = response.Item2;
+                }
+                else
+                {
+                    return RedirectToAction("Details", "Account", new { num = response.Item1,message = response.Item2 });
+                }
+              
             }
-
-            ViewData["message"] = "Invalid form data, please try again.";
 
             ViewData["AccountType"] = new SelectList(_db.AccountTypes, "AccountType", "AccountType", bankAccount.AccountType);
 
@@ -83,54 +137,52 @@ namespace BankAccountMgmt.Controllers
         }
 
         [HttpPost] // POST: Account/Edit
-        public IActionResult Edit([Bind("AccountNum,AccountType,Balance")] BankAccount bankAccount)
+        public IActionResult Edit([Bind("ClientId,FirstName,LastName,Email,AccountNum,AccountType,Balance")] ClientAccountVM bankAccountVM)
         {
-            ViewData["message"] = "";
+            bankAccountVM.Message = "Invalid form data, please try again.";
             string editMsg = " ";
 
             if (ModelState.IsValid)
             {
                 BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);
-                editMsg = bankAccountRepo.EditAccount(bankAccount);
+                editMsg = bankAccountRepo.EditAccount(bankAccountVM);
 
-                return RedirectToAction("Details", "Account", new { num = bankAccount.AccountNum, message = editMsg });
+                return RedirectToAction("Details", "Account", new { num = bankAccountVM.AccountNum, message = editMsg });
             }
 
-            ViewData["message"] = "Invalid form data, please try again.";
+            ViewData["AccountType"] = new SelectList(_db.AccountTypes, "AccountType", "AccountType", bankAccountVM.AccountType);
 
-            ViewData["AccountType"] = new SelectList(_db.AccountTypes, "AccountType", "AccountType", bankAccount.AccountType);
-
-            return View(bankAccount);
+            return View(bankAccountVM);
         }
 
 /*------------------------------------------------ DELETE -----------------------------------------------*/
         public IActionResult Delete(int id)
         {
             BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);
-            BankAccount account = bankAccountRepo.GetAccountDetail(id, User.Identity.Name);
+            BankAccountVM account = bankAccountRepo.GetBankAccount(id);
             return View(account);
         }
 
         [HttpPost] // POST: Account/Delete
-        public IActionResult Delete([Bind("AccountNum,AccountType,Balance")] BankAccount account)
+        public IActionResult Delete([Bind("AccountNum,AccountType,Balance")] BankAccountVM  deleteAccount)
         {
 
-            ViewData["message"] = "";
+            
+            deleteAccount.Message = "Invalid form data, please try again.";
             string deleteMsg = " ";
             if (ModelState.IsValid)
             {
-                ModelState.Remove("ClientAccount");
+                //ModelState.Remove("ClientAccount");
                 // ModelState.ClearValidationState("ClientAccount");
                 BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);
-                deleteMsg = bankAccountRepo.DeleteAccount(account.AccountNum);
+                deleteMsg = bankAccountRepo.DeleteAccount(deleteAccount.AccountNum);
 
-                ViewData["message"] = deleteMsg;
+                deleteAccount.Message = deleteMsg;
                 return RedirectToAction("Index", "Account", new { message = deleteMsg });
             }
 
-            ViewData["message"] = "Invalid form data, please try again.";
 
-            return View(account);
+            return View(deleteAccount);
         }
 
 

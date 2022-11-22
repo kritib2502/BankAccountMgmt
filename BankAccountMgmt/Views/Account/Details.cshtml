@@ -2,10 +2,14 @@
 
 @{
     ViewData["Title"] = "Details";
+    string message = Model != null ? Model.Message : string.Empty;
 }
 
 <h1>Details</h1>
-@ViewBag.message
+@if (message != " ")
+{
+    <div class="alert alert-success">@message</div>
+}
 <div>
     <h4>Account Detail</h4>
     <hr />
@@ -54,6 +58,7 @@
         </dd>
     </dl>
 </div>
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.AccountNum">Edit</a> |
     <a asp-action="Index">Back to List</a>

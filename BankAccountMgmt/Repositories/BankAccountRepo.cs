@@ -1,5 +1,6 @@
 ﻿using BankAccountMgmt.Data;
 using BankAccountMgmt.Models;
+using BankAccountMgmt.ViewModels;
 using BankAccountMVC.Repositories;
 
 namespace BankAccountMgmt.Repositories
@@ -22,22 +23,29 @@ namespace BankAccountMgmt.Repositories
 
 /*------------------------------------------------ CREATING AN ACCOUNT -----------------------------------------------*/
 
-        public int CreateAccount(BankAccount bankAccount, string email)
+        public Tuple<int,string> CreateAccount(BankAccountVM bankAccountVM, string email)
         {
             string message = "";
-            int accountnum = 0;
+
+            BankAccount bankAccount = new BankAccount();  
+            ClientAccount clientAccount = new ClientAccount();
 
             try
             {
 
+                bankAccount = new BankAccount
+                { 
+                    AccountType = bankAccountVM.AccountType,
+                    Balance = bankAccountVM.Balance,
+                };
+
                 _db.BankAccounts.Add(bankAccount);
                 _db.SaveChanges();
-                accountnum = bankAccount.AccountNum;
 
                 ClientRepo clientRepo = new ClientRepo(_db);
                 Client client = clientRepo.GetClient(email);
 
-                ClientAccount clientAccount = new ClientAccount
+               clientAccount = new ClientAccount
                 {
                     ClientId = client.ClientId,
                     AccountNum = bankAccount.AccountNum
@@ -46,25 +54,52 @@ namespace BankAccountMgmt.Repositories
                 _db.ClientAccounts.Add(clientAccount);
                 _db.SaveChanges();
 
+                message = $"Success creating your {bankAccount.AccountType} account, your new account number is {bankAccount.AccountNum}";
+
             }
             catch (Exception ex)
             {
-                message = ex.Message;
+
+                bankAccount.AccountNum = -1;
+                message = $"Error creating your new account, error: {ex.Message}";
             }
 
-            return accountnum;
+            return Tuple.Create(bankAccount.AccountNum,message);
         }
 
 
 /*------------------------------------------------ EDITING AN ACCOUNT -----------------------------------------------*/
-        public string EditAccount(BankAccount bankAccount)
+        public string EditAccount(ClientAccountVM bankAccountVM)
         {
             string message = "";
             try
             {
+              
+                Client client = new Client();
+                BankAccount bankAccount = new BankAccount();
+
+                client = new Client
+                {
+                    ClientId = bankAccountVM.ClientId,
+                    FirstName = bankAccountVM.FirstName,
+                    LastName = bankAccountVM.LastName,
+                    Email = bankAccountVM.Email,
+                };
+
+                _db.Clients.Update(client);
+                _db.SaveChanges();
+
+                bankAccount = new BankAccount
+                {
+                    AccountNum = bankAccountVM.AccountNum,
+                    AccountType = bankAccountVM.AccountType,
+                    Balance = bankAccountVM.Balance,
+                };   
+
                 _db.BankAccounts.Update(bankAccount);
                 _db.SaveChanges();
-                message = "Update has been saved.";
+
+                message = $"Success editing {bankAccount.AccountType} Account No. {bankAccount.AccountNum}";
             }
             catch (Exception ex)
             {
@@ -73,29 +108,22 @@ namespace BankAccountMgmt.Repositories
             return message;
         }
 
- /*------------------------------------------------ GETTING ACCOUNT DETAILS -----------------------------------------------*/
-        public BankAccount GetAccountDetail(int accountNum, string email)
+
+/*------------------------------------------------ DELETING AN ACCOUNT -----------------------------------------------*/
+
+
+        public BankAccountVM GetBankAccount(int accountNum)
         {
-            BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);
-            BankAccount bankAccount = bankAccountRepo.GetAccount(accountNum);
-
-            ClientRepo clientRepo = new ClientRepo(_db);
-            Client client = clientRepo.GetClient(email);
-
-
-            BankAccount account = new BankAccount
-            {
+           var bankAccount = _db.BankAccounts.FirstOrDefault(x => x.AccountNum == accountNum);
+            BankAccountVM bankAccountVM = new BankAccountVM{
                 AccountNum = bankAccount.AccountNum,
                 AccountType = bankAccount.AccountType,
                 Balance = bankAccount.Balance
-
             };
-
-            return account;
-
+           
+            return bankAccountVM;
         }
 
-/*------------------------------------------------ DELETING AN ACCOUNT -----------------------------------------------*/
         public string DeleteAccount(int accountNum)
         {
             string message = "";

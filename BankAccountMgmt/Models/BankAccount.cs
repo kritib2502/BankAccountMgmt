@@ -8,6 +8,7 @@ namespace BankAccountMgmt.Models
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Editable(false)]
         public int AccountNum { get; set; }
 
         public string? AccountType { get; set; }
