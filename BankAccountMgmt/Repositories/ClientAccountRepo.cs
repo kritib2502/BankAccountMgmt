@@ -15,7 +15,8 @@ namespace BankAccountMgmt.Repositories
         }
 
         /// <summary>
-        /// 
+        /// 1. This method returns the list of bank accounts of the user logged in
+        /// Using the ClientAccountVM 
         /// </summary>
         /// <param name="email"></param>
         /// <returns>List<ClientAccountVM></returns>
@@ -43,19 +44,22 @@ namespace BankAccountMgmt.Repositories
             return clientAccountVMs;
         }
 
+
+
         /// <summary>
-        /// 
+        /// 1. This method returns the required account details to be passed to the Details View.
+        /// 2. ClientRepo and BankAccount Repo are called to gather information from Client Table and BankAccount Table
         /// </summary>
         /// <param name="accountNum"></param>
         /// <param name="email"></param>
         /// <returns>ClientAccountVM</returns>
-        public ClientAccountVM GetAccountDetail(int accountNum, string email)
+        public ClientAccountVM GetAccountDetail(int accountNum, int clientID)
         {
             BankAccountRepo bankAccountRepo = new BankAccountRepo(_db);
             BankAccount bankAccount = bankAccountRepo.GetAccount(accountNum);
 
             ClientRepo clientRepo = new ClientRepo(_db);
-            Client client = clientRepo.GetClient(email);
+            Client client = clientRepo.GetClient(clientID);
 
 
             ClientAccountVM accountDetail = new ClientAccountVM

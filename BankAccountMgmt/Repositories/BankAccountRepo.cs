@@ -15,6 +15,12 @@ namespace BankAccountMgmt.Repositories
 
 
 /*------------------------------------------------ TO GET AN ACCOUNT -----------------------------------------------*/
+/// <summary>
+/// 1. This method return a BankAccount record for the account number provided 
+///    based on the user logged in.
+/// </summary>
+/// <param name="accountNum"></param>
+/// <returns> BankAccount </returns>
         public BankAccount GetAccount(int accountNum)
         {
             var bankAccount = _db.BankAccounts.FirstOrDefault(x => x.AccountNum == accountNum);
@@ -22,8 +28,16 @@ namespace BankAccountMgmt.Repositories
         }
 
 /*------------------------------------------------ CREATING AN ACCOUNT -----------------------------------------------*/
+/// <summary>
+/// 1. This method uses the BankAccountVM to parse through the ClientAccount and BankAccount Tables
+///    to create a new account in the database.
+/// 2. Returns the account number of the account created and a message to be displayed once account creation is successful.
+/// </summary>
+/// <param name="bankAccountVM"></param>
+/// <param name="email"></param>
+/// <returns> Tuple<int,string> </returns>
 
-        public Tuple<int,string> CreateAccount(BankAccountVM bankAccountVM, string email)
+        public Tuple<int,string> CreateAccount(BankAccountVM bankAccountVM, int clientID)
         {
             string message = "";
 
@@ -32,7 +46,6 @@ namespace BankAccountMgmt.Repositories
 
             try
             {
-
                 bankAccount = new BankAccount
                 { 
                     AccountType = bankAccountVM.AccountType,
@@ -43,7 +56,7 @@ namespace BankAccountMgmt.Repositories
                 _db.SaveChanges();
 
                 ClientRepo clientRepo = new ClientRepo(_db);
-                Client client = clientRepo.GetClient(email);
+                Client client = clientRepo.GetClient(clientID);
 
                clientAccount = new ClientAccount
                 {
@@ -53,28 +66,30 @@ namespace BankAccountMgmt.Repositories
 
                 _db.ClientAccounts.Add(clientAccount);
                 _db.SaveChanges();
-
                 message = $"Success creating your {bankAccount.AccountType} account, your new account number is {bankAccount.AccountNum}";
-
             }
             catch (Exception ex)
             {
-
                 bankAccount.AccountNum = -1;
                 message = $"Error creating your new account, error: {ex.Message}";
             }
-
             return Tuple.Create(bankAccount.AccountNum,message);
         }
 
+ /*------------------------------------------------ EDITING AN ACCOUNT -----------------------------------------------*/
 
-/*------------------------------------------------ EDITING AN ACCOUNT -----------------------------------------------*/
+ /// <summary>
+ /// 1. This method uses the ClientAccountVM to parse through the Client and BankAccount Tables
+ ///    and modify the account details in the database.
+ /// 2. Returns a message to be displayed on the Details View once account modification is successful.
+ /// </summary>
+ /// <param name="bankAccountVM"></param>
+/// <returns> string </returns>
         public string EditAccount(ClientAccountVM bankAccountVM)
         {
             string message = "";
             try
-            {
-              
+            {           
                 Client client = new Client();
                 BankAccount bankAccount = new BankAccount();
 
@@ -110,6 +125,12 @@ namespace BankAccountMgmt.Repositories
 
 
 /*------------------------------------------------ DELETING AN ACCOUNT -----------------------------------------------*/
+/// <summary>
+/// This method is used to return a bankaccount record through the BankAccountVM using 
+/// the account id of the logged in user.
+/// </summary>
+/// <param name="accountNum"></param>
+/// <returns> BankAccountVM </returns>
 
 
         public BankAccountVM GetBankAccount(int accountNum)
@@ -124,6 +145,13 @@ namespace BankAccountMgmt.Repositories
             return bankAccountVM;
         }
 
+ /// <summary>
+ /// This method deletes ClientAccount and BankAccounts from the database
+ /// by calling the BankAccount Repository and returns a message to be passed to the Index View
+ /// upon successful deletion of the account.
+ /// </summary>
+ /// <param name="accountNum"></param>
+/// <returns>string </returns>
         public string DeleteAccount(int accountNum)
         {
             string message = "";
@@ -131,8 +159,6 @@ namespace BankAccountMgmt.Repositories
             {
                 BankAccountRepo brRepo = new BankAccountRepo(_db);
                 BankAccount bankAccount = brRepo.GetAccount(accountNum);
-
-
                 ClientAccount clientAccount = brRepo.GetClientAccount(accountNum);
 
                 _db.ClientAccounts.Remove(clientAccount);
@@ -148,6 +174,13 @@ namespace BankAccountMgmt.Repositories
             return message;
         }
 
+
+ /// <summary>
+ /// This method return the ClientAccount Record of the provided account number
+ /// of the logged in user.
+ /// </summary>
+ /// <param name="accountNum"></param>
+ /// <returns> ClientAccount </returns>
         public ClientAccount GetClientAccount(int accountNum)
         {
             var clientAccount = _db.ClientAccounts.FirstOrDefault(x => x.AccountNum == accountNum);

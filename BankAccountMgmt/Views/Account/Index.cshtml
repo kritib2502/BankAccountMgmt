@@ -1,4 +1,4 @@
-﻿@*@model IEnumerable<ClientAccountVM>*@
+﻿
 @using BankAccountMgmt.ViewModels
 @using BankAccountMgmt.Controllers
 @model PaginatedList<ClientAccountVM>
@@ -11,7 +11,11 @@
 }
 
 <h1>Account Summary</h1>
-@ViewBag.Message
+
+@if (@ViewBag.Message != null)
+{
+    <div class="alert alert-success">@ViewBag.Message</div>
+}
 <p>
     <a asp-action="Create">Add New Bank Account</a>
 </p>
@@ -37,7 +41,7 @@
         <tr>
             <th>
                 <a asp-action="Index" asp-route-sortOrder="@ViewData["accountNumSortParm"]">
-                    AccountNum
+                    Account Number
                 </a>
             </th>
             <th>
@@ -48,7 +52,7 @@
             </th>
             <th>
                 <a asp-action="Index" asp-route-sortOrder="@ViewData["accountTypeSortParm"]">
-                    AccountType
+                    Account Type
                 </a>
             </th>
 
@@ -79,6 +83,7 @@
         }
     </tbody>
 </table>
+
 @{
     var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
     var nextDisabled = !Model.HasNextPage ? "disabled" : "";

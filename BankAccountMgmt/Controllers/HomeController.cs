@@ -13,11 +13,20 @@ namespace BankAccountMgmt.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Displays the landing page containing description about the Bank and its statement
+        /// </summary>
+        /// <returns> IActionResult </returns>
         public IActionResult Index()
         {
             return View();
         }
 
+
+        /// <summary>
+        /// Displays the privacy page
+        /// </summary>
+        /// <returns> IActionResult </returns>
         public IActionResult Privacy()
         {
             return View();

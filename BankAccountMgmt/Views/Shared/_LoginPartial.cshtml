@@ -2,10 +2,12 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
+
 <ul class="navbar-nav">
-@if (SignInManager.IsSignedIn(User))
+    @if (SignInManager.IsSignedIn(User) && !String.IsNullOrEmpty(Context.Session.GetString("FirstName")))
 {
       string firstname = Context.Session.GetString("FirstName");
+     
         <li class="nav-item">
         <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @firstname!</a>
     </li>
